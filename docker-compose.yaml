@@ -1,0 +1,52 @@
+services:
+  mongodb:
+    image: mongo:latest
+    restart: always
+    container_name: mongodb
+    volumes:
+      - ./db:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - dev-network
+  
+  server:
+    build: 
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: webapp-server
+    restart: always
+    ports:
+      - "9000:9000"
+    networks:
+      - dev-network
+    volumes:
+      - ./server:/server/src/app
+      - /server/node_modules
+    # depends_on:
+    #   - mongodb
+    # environment:
+    #   - MONGO_URI=mongodb://mongodb:27017/studentconnect
+    
+  client:
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: webapp-client
+    restart: always
+    depends_on:
+      - server
+    ports:
+      - "3000:3000"
+    networks:
+      - dev-network
+    # environment:
+    #   - REACT_APP_API_URL=http://server:9000
+    volumes:
+      - ./client:/client/src/app
+      - /client/node_modules
+  
+networks:
+  dev-network:
+    driver: bridge
+  
